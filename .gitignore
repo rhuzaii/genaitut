@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.venv/
+.DS_Store
+
+# Upload bundles, rebuilt by zipping the experiment folder
+*.zip
+
+# Generated experiment results, downloaded from Colab instead
+experiment1_multimodal/outputs/
+experiment1_multimodal/outputs_*/
