@@ -33,10 +33,24 @@ def load_pipeline(cfg: Config, model_key: str):
         "summarization",
         model=model_id,
         tokenizer=tokenizer,
-        device=0 if device == "cuda" else -1,
+        device=_pipeline_device(device),
         torch_dtype=torch.float16 if device == "cuda" else torch.float32,
     )
     return summarizer, tokenizer
+
+
+def _pipeline_device(device: str):
+    """Map a device name onto what the pipeline expects.
+
+    The pipeline takes an integer index for CUDA and -1 for CPU, but Apple
+    silicon needs the string "mps". Passing -1 there would quietly run on the
+    CPU instead of the GPU.
+    """
+    if device == "cuda":
+        return 0
+    if device == "mps":
+        return "mps"
+    return -1
 
 
 def summarize_document(cfg: Config, text: str, model_key: str) -> dict:
