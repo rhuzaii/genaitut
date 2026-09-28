@@ -7,5 +7,5 @@ __pycache__/
 *.zip
 
 # Generated experiment results, downloaded from Colab instead
-experiment1_multimodal/outputs/
-experiment1_multimodal/outputs_*/
+*/outputs/
+*/outputs_*/

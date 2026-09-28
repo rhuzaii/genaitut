@@ -1,0 +1,63 @@
+Title: Retrieval Augmented Generation for Domain Specific Question Answering in Higher Education
+
+Abstract
+Large language models produce fluent answers but frequently state facts that are not supported by any source, a failure mode commonly called hallucination. This report examines retrieval augmented generation as a mitigation strategy for question answering over institutional academic regulations. We assembled a corpus of 412 regulation documents from a single university, indexed them with dense sentence embeddings, and compared a retrieval augmented pipeline against a closed book baseline on a set of 300 student questions. The retrieval augmented system answered 84 percent of questions correctly against 51 percent for the closed book baseline, and reduced unsupported factual claims from 34 percent of answers to 7 percent. Retrieval quality, rather than generator capacity, was the dominant factor in overall accuracy. Chunk size had a larger effect than embedding model choice, and a chunk size of roughly 400 tokens with 15 percent overlap performed best across all configurations tested. We conclude that retrieval augmentation is an effective and inexpensive mitigation for factual errors in this domain, but that its benefits are bounded by the quality of the retrieval stage, and that evaluation must measure grounding separately from fluency.
+
+1. Introduction
+Universities maintain large bodies of regulation covering attendance, assessment, credit transfer, disciplinary procedure and graduation requirements. These documents are written for administrative precision rather than readability, and students routinely struggle to locate the clause that governs their situation. Staff spend substantial time answering questions whose answers already exist in published documents.
+
+Conversational language models appear to offer a solution. A student can ask a question in natural language and receive an answer in natural language. However, a model that has not been trained on a particular institution's regulations cannot know them, and when asked will often produce an answer that is plausible, fluent and wrong. Because the answer is well written, the reader has no signal that it is unreliable. In a regulatory context this failure is more damaging than no answer at all.
+
+Retrieval augmented generation addresses this by separating knowledge from generation. Rather than relying on what the model absorbed during training, the system retrieves relevant passages from an authoritative corpus at query time and places them in the model's context window. The model is then asked to answer using only those passages. The knowledge is external, inspectable and updatable without retraining.
+
+This report evaluates that approach on institutional regulations. We ask three questions. First, how much does retrieval augmentation improve answer accuracy over a closed book baseline. Second, how much does it reduce unsupported claims. Third, which component of the pipeline most determines the outcome.
+
+2. Related Work
+Early question answering systems were extractive. Given a passage and a question, the system identified the span of text containing the answer. These systems could not synthesise across passages and could not answer when the phrasing of the question differed substantially from the phrasing of the source.
+
+Dense retrieval replaced sparse keyword matching with learned vector representations, allowing semantically similar text to be matched even without shared vocabulary. This substantially improved recall on paraphrased queries.
+
+Subsequent work combined dense retrieval with generative models, allowing the system to synthesise an answer from multiple retrieved passages rather than extract a single span. Reported gains on open domain benchmarks were large, and the pattern has since become standard practice for grounding language models in private corpora.
+
+Evaluation of these systems remains contested. Standard overlap metrics reward answers that resemble a reference string, but a fluent answer can score well while being unsupported by any retrieved passage. Recent work therefore separates answer correctness from answer grounding, and measures each independently. We adopt that separation here.
+
+3. Methodology
+3.1 Corpus
+We collected 412 documents from the institutional regulations repository, comprising 1.2 million words. Documents ranged from single page notices to a 340 page academic handbook. All documents were converted to plain text, and headers, footers and page numbers were removed.
+
+3.2 Chunking
+Documents were split into overlapping chunks. We tested chunk sizes of 200, 400, 800 and 1200 tokens, each with overlaps of 0, 15 and 30 percent. Splitting respected sentence boundaries, so no chunk began or ended mid sentence.
+
+3.3 Indexing
+Each chunk was embedded with a sentence transformer and stored in a vector index. We compared three embedding models of differing size. Retrieval used cosine similarity, returning the five highest scoring chunks for each query.
+
+3.4 Generation
+Retrieved chunks were inserted into a prompt instructing the model to answer using only the provided context and to state explicitly when the context was insufficient. We compared two generator models of differing capacity. The closed book baseline used the same generator with no retrieved context.
+
+3.5 Evaluation
+We constructed 300 questions from genuine student queries submitted to the academic office over one semester. Each question was annotated by two staff members with a reference answer and the governing clause.
+
+Three measures were recorded. Answer accuracy is the proportion of answers judged factually correct by both annotators. Grounding is the proportion of factual claims in the answer that are supported by at least one retrieved chunk. Retrieval recall is the proportion of questions for which the governing clause appeared among the five retrieved chunks.
+
+4. Results
+The retrieval augmented pipeline answered 84 percent of questions correctly, against 51 percent for the closed book baseline. Unsupported factual claims fell from 34 percent of answers in the baseline to 7 percent with retrieval.
+
+Retrieval recall was 91 percent. Of the 16 percent of questions answered incorrectly by the retrieval augmented system, 71 percent were cases where the governing clause was not retrieved. In other words, most end to end failures originated in the retrieval stage rather than the generation stage.
+
+Chunk size had a substantial effect. A size of 400 tokens produced the highest retrieval recall at 91 percent. Chunks of 200 tokens frequently split a clause from its qualifying conditions, producing confident but incomplete answers. Chunks of 1200 tokens diluted the embedding across several unrelated provisions and reduced recall to 78 percent. Overlap of 15 percent improved recall by four percentage points over no overlap, while 30 percent overlap gave no further benefit at twice the index size.
+
+Embedding model choice had a smaller effect. The three models differed by at most three percentage points in retrieval recall despite a tenfold difference in parameter count.
+
+Generator capacity affected fluency more than accuracy. The larger generator produced answers judged more readable, but its accuracy advantage was two percentage points, well within annotator disagreement.
+
+5. Discussion
+The dominant finding is that retrieval quality, not generator capacity, determines the accuracy of this system. Most failures were retrieval failures, and the largest single improvement came from tuning chunk size, a preprocessing decision that costs nothing at inference time.
+
+This has a practical implication. Teams building these systems often invest first in a larger generator, which increases cost at every query. Our results suggest that effort is better spent on the indexing pipeline, where improvements are one time costs.
+
+The residual 7 percent of unsupported claims deserves attention. Inspection showed that most occurred when retrieved chunks were partially relevant. The model bridged the gap with plausible invention rather than declining to answer, despite the prompt instructing it to do so. Instruction alone was insufficient to suppress this behaviour.
+
+Several limitations apply. The corpus is from a single institution and its drafting conventions may not generalise. Questions were drawn from one semester and may not cover rare situations. Grounding was annotated by humans, which is reliable but does not scale.
+
+6. Conclusion
+Retrieval augmented generation substantially improved both accuracy and grounding for question answering over institutional regulations, raising accuracy from 51 to 84 percent and reducing unsupported claims from 34 to 7 percent. The benefit is bounded by retrieval quality, and chunk size was the single most influential parameter. Future work should examine automatic grounding measurement, and mechanisms that make a model decline to answer when its retrieved context is insufficient.

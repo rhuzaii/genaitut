@@ -9,6 +9,8 @@ Face, LangChain, RNNs, LSTMs and transformers.
 | Path | Contents |
 | --- | --- |
 | `experiment1_multimodal/` | Experiment 1: multimodal generation and cross modal alignment scoring |
+| `experiment4_summarization/` | Experiment 4: abstractive summarization of academic reports |
+| `REPORT_TEMPLATE.md`, `REPORT_TEMPLATE.docx` | Reusable lab report template |
 | `CSL75_lab_syllabus.txt` | Course contents, the list of experiments and the evaluation scheme |
 
 ## Experiments
@@ -18,7 +20,7 @@ Face, LangChain, RNNs, LSTMs and transformers.
 | 1 | Multimodal generative AI: text, image and audio from one theme | Implemented |
 | 2 | Word embeddings for prompt enrichment | Not started |
 | 3 | TensorFlow DNN for academic performance prediction | Not started |
-| 4 | Hugging Face summarization of academic reports | Not started |
+| 4 | Hugging Face summarization of academic reports | Implemented |
 | 5 | Pretrained word vectors, vector arithmetic and PCA visualization | Not started |
 | 6 | Custom Word2Vec on a domain specific corpus | Not started |
 | 7 | LangChain with Cohere, document loading and prompt templates | Not started |
