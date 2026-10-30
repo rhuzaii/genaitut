@@ -19,8 +19,15 @@ from pathlib import Path
 
 # "302. Punishment for murder.—Whoever commits murder ..."
 # "302A. ..." and "Section 302." are both accepted.
+#
+# A provision that has been substituted by a later amendment is printed with a
+# leading footnote marker, as in "2[375. Rape.—A man is said to commit ...".
+# That convention is near universal in Indian bare Acts, and requiring the
+# number at the start of the line silently loses every amended section. In the
+# Indian Penal Code that is 13 sections, including 34 (common intention) and
+# 375 (rape), two of the most frequently cited provisions in the whole Code.
 SECTION_START = re.compile(
-    r"^[ \t]*(?:Section[ \t]+)?(?P<number>\d{1,3}[A-Z]{0,2})\.[ \t]*(?P<rest>\S.*)$"
+    r"^[ \t]*(?:\d{1,2}\[)?(?:Section[ \t]+)?(?P<number>\d{1,3}[A-Z]{0,2})\.[ \t]*(?P<rest>\S.*)$"
 )
 CHAPTER_START = re.compile(
     r"^[ \t]*CHAPTER[ \t]+(?P<numeral>[IVXLC]+|\d+)\b[ \t]*(?P<title>.*)$",
@@ -96,6 +103,7 @@ def load(path: Path) -> Statute:
 
     raw = clean(raw)
     sections = parse_sections(raw)
+    sections = consolidate(sections)
     title = _guess_title(raw, path)
     return Statute(path=path, title=title, sections=sections, raw_text=raw)
 
@@ -167,6 +175,62 @@ def parse_sections(text: str) -> list[Section]:
 
     flush()
     return sections
+
+
+# Amendment footnotes are printed at the foot of the page as "1. Ins. by Act
+# 3 of 1951, s. 3" or "2. Subs. by Act 26 of 1955". After the heading split
+# those leave a heading of "Ins", "Subs", "Rep" and so on, and they begin with
+# a number and a full stop, so they are indistinguishable from a section
+# header by shape alone. Left in, they outweigh the real provision during
+# consolidation because a page can carry several, and section 1 of the Indian
+# Penal Code resolves to 1500 words of amendment history.
+FOOTNOTE_HEADINGS = {"ins", "subs", "rep", "s", "cl", "omitted", "added", "now", "vide"}
+FOOTNOTE_PREFIX = re.compile(
+    r"^(?:the words|certain words|these words|clause|earlier|before substitution)\b",
+    re.IGNORECASE,
+)
+
+
+def _looks_like_footnote(section: "Section") -> bool:
+    heading = section.heading.strip().rstrip(".")
+    if heading.lower() in FOOTNOTE_HEADINGS:
+        return True
+    return bool(FOOTNOTE_PREFIX.match(heading))
+
+
+def consolidate(sections: list[Section], min_body_words: int = 4) -> list[Section]:
+    """Drop table of contents entries and keep one entry per section number.
+
+    Two artefacts inflate a naive parse of a statute PDF.
+
+    The document opens with an arrangement of sections that repeats every
+    heading with no body, so each heading is seen twice: once empty, once
+    real. Those empty entries are dropped.
+
+    Sub clauses and illustrations inside a section are themselves numbered, so
+    a line beginning "2." part way through section 300 looks like the start of
+    section 2. Keeping, for each number, the entry with the most body text
+    selects the operative provision over both the contents line and the stray
+    sub clause, because the real provision is almost always the longest.
+
+    Without this the Indian Penal Code parses as about 1400 sections instead
+    of roughly 500, and section 302 resolves to an empty contents entry.
+    """
+    best: dict[str, Section] = {}
+    for section in sections:
+        words = len(section.text.split())
+        if words < min_body_words or _looks_like_footnote(section):
+            continue
+        current = best.get(section.number)
+        if current is None or words > len(current.text.split()):
+            best[section.number] = section
+    return sorted(best.values(), key=lambda s: _sort_key(s.number))
+
+
+def _sort_key(number: str) -> tuple[int, str]:
+    digits = "".join(ch for ch in number if ch.isdigit())
+    suffix = "".join(ch for ch in number if ch.isalpha())
+    return (int(digits) if digits else 0, suffix)
 
 
 def _split_heading(rest: str) -> tuple[str, str, str]:

@@ -53,6 +53,38 @@ chunks have no reliable section label, so scoring on labels alone would
 measure the labelling rather than the retrieval. Without that correction the
 fixed strategy appeared to score 0.333, which was an artifact.
 
+## What the real IPC broke
+
+The parser was written against a clean statute and then run on the official
+Indian Penal Code PDF, 119 pages and 84,000 words. Three things went wrong,
+all of them specific to how Indian bare Acts are typeset, and all of them
+silent failures that produce a working but wrong index.
+
+**The arrangement of sections.** The document opens with a contents list that
+repeats every heading with no body. Each section therefore parsed twice, once
+empty and once real, and the Code came out as 1435 sections instead of roughly
+500. Section 302 resolved to the empty contents entry.
+
+**Amended provisions carry a footnote marker.** A substituted section is
+printed as `2[375. Rape.-A man is said to commit ...`, so the number is not at
+the start of the line. Requiring it there silently dropped 13 sections,
+including 34 (common intention) and 375 (rape), two of the most cited
+provisions in the Code.
+
+**Amendment footnotes look exactly like section headers.** A page foot carries
+`1. Ins. by Act 3 of 1951, s. 3`, which has the same shape as a section header
+and wins consolidation because a page can carry several. Section 1 resolved to
+1500 words of amendment history.
+
+After fixing all three: 581 sections, 24 chapters, and of sections 1 to 511
+only four are absent, two of which (16 and 17) are genuinely repealed.
+
+The general lesson is worth stating in the report. None of these raised an
+error. Each produced an index that looked fine and answered confidently from
+the wrong text, which is exactly the failure mode retrieval augmentation is
+supposed to prevent. Verifying that a known section resolves to its known text
+is a necessary step, not a nicety.
+
 ## Failing closed
 
 A legal lookup tool that invents a provision is worse than one that says it
