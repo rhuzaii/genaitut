@@ -40,18 +40,40 @@ number on every chunk, which is what allows an answer to cite a source the
 reader can verify. Both strategies are implemented so the report can measure
 the difference rather than assert it.
 
-Measured on the 18 annotated questions in `eval_questions.json`:
+A passage counts as a hit when its section label matches **or** when it
+contains the governing section's heading. The second test matters: fixed
+chunks have no reliable section label, so scoring on labels alone would
+measure the labelling rather than the retrieval.
+
+On the short fictional test statute, section chunking wins clearly:
 
 | Strategy | Chunks | Mean words | recall@1 | recall@3 | MRR |
 | --- | --- | --- | --- | --- | --- |
 | section | 20 | 43.2 | 0.944 | 1.000 | 0.972 |
 | fixed | 4 | 252.2 | 0.611 | 0.944 | 0.764 |
 
-A passage counts as a hit when its section label matches **or** when it
-contains the governing section's heading. The second test matters: fixed
-chunks have no reliable section label, so scoring on labels alone would
-measure the labelling rather than the retrieval. Without that correction the
-fixed strategy appeared to score 0.333, which was an artifact.
+On the real Indian Penal Code with mpnet embeddings and 22 annotated
+questions, the result reverses:
+
+| Strategy | Chunks | Mean words | recall@1 | recall@3 | recall@5 | MRR |
+| --- | --- | --- | --- | --- | --- | --- |
+| section | 613 | 102.3 | 0.455 | 0.773 | 0.818 | 0.592 |
+| fixed | 322 | 306.7 | 0.636 | 0.727 | 0.955 | 0.719 |
+
+That reversal is worth understanding rather than explaining away. Real IPC
+sections are short: section 302 is nineteen words, which gives an embedding
+very little to work with. A 307 word fixed chunk bundles several neighbouring
+provisions, so a murder query lands on a block that happens to contain 299 to
+304, and the containment test scores that as a hit. Coarser chunks are
+rewarded by this metric almost by construction.
+
+Recall is therefore not the whole argument. A fixed chunk cannot be cited: it
+has no reliable section number, so an answer built on it cannot tell the
+reader which provision to verify. Section chunking trades measured recall for
+attributability, and in a legal lookup tool attributability is the point. A
+hybrid, retrieving over neighbourhood sized chunks and then citing the
+sections inside the one retrieved, is the obvious next design and is not
+implemented here.
 
 ## What the real IPC broke
 
