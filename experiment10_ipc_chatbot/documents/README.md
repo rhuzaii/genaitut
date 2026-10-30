@@ -2,14 +2,25 @@
 
 ## The Indian Penal Code
 
-The IPC is not committed to this repository. Download it yourself and save it
-here as `ipc.pdf`.
+`ipc.pdf` is committed here: 119 pages, 1.1 MB, the bare Act as published by
+India Code. It is a Government of India public document.
 
-Official source, India Code, the Government of India legislative repository:
+Do not use the `.txt` bitstream that India Code offers alongside the PDF. It
+is truncated to about a fifth of the Act, stopping partway through the private
+defence chapter, and it contains no operative text for section 302 or anything
+after it. The truncation is silent: the file looks complete and parses without
+error. Use the PDF.
 
-    https://www.indiacode.nic.in
+Official source, India Code, the Government of India legislative repository.
+The site migrated from indiacode.nic.in to indiacode.gov.in, and the IPC is
+filed under its repealed title because the Bharatiya Nyaya Sanhita replaced
+it, so searching the Acts collection does not find it:
 
-Search for "Indian Penal Code, 1860" and download the PDF of the bare Act.
+    https://indiacode.gov.in/items/972afbe0-a2de-415d-9df5-8d70038056ad
+
+Direct PDF:
+
+    https://indiacode.gov.in/server/api/core/bitstreams/337c7a03-60c6-4953-8dd6-90e65c343629/content
 
 Then build the index:
 

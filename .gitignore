@@ -13,3 +13,6 @@ __pycache__/
 # Built vector indexes, rebuilt by running build_index.py
 */index/
 */index_*/
+
+# The India Code .txt bitstream is truncated to about a fifth of the Act
+experiment10_ipc_chatbot/documents/ipc.txt
