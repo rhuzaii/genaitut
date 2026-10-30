@@ -83,8 +83,9 @@ def build_interface(cfg: Config):
             chatbot=gr.Chatbot(type="messages", height=440, show_label=False),
         )
         gr.Markdown(
-            f"Backend: `{bot.backend}`  |  Index: `{cfg.index_dir}`  |  "
-            f"top k: {cfg.retrieval.top_k}  |  relevance threshold: {cfg.retrieval.min_score}"
+            f"Backend: `{bot.backend}`  |  Embeddings: `{cfg.retrieval.embedding_key}`  |  "
+            f"Index: `{cfg.index_dir}`  |  top k: {cfg.retrieval.top_k}  |  "
+            f"relevance threshold: {cfg.retrieval.min_score}"
         )
         gr.Markdown(f"*{chatbot.DISCLAIMER}*")
 
@@ -107,7 +108,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
+    import vectorstore
+
     cfg = Config(index_dir=Path(args.index_dir), device=args.device)
+    cfg.retrieval.embedding_key = (
+        vectorstore.embedding_key_from_index(Path(args.index_dir)) or "minilm"
+    )
     cfg.retrieval.top_k = args.top_k
     cfg.retrieval.min_score = args.min_score
     cfg.generator.backend = args.backend

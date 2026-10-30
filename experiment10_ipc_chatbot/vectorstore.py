@@ -83,6 +83,24 @@ def load_index(cfg: Config):
     )
 
 
+def embedding_key_from_index(index_dir: Path) -> str | None:
+    """Recover which embedding model built an index.
+
+    An index is only readable with the model that produced it: loading a 768
+    dimension index with a 384 dimension model fails on a shape mismatch, or
+    worse, silently returns nonsense. The build records the model, so callers
+    should take it from here rather than making the user remember a flag.
+    """
+    path = Path(index_dir) / MANIFEST_NAME
+    if not path.exists():
+        return None
+    try:
+        manifest = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return None
+    return manifest.get("config", {}).get("retrieval", {}).get("embedding_key")
+
+
 def read_manifest(cfg: Config) -> dict[str, Any]:
     path = cfg.index_dir / MANIFEST_NAME
     if not path.exists():
