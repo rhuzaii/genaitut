@@ -1,0 +1,16 @@
+# These pins are a coherent set, verified with `pip check`. The version
+# constraints are not decoration: transformers 5.x removed pipeline tasks this
+# project uses, and gradio 6.x pulls huggingface-hub 2.x, which breaks
+# transformers 4.x. Loosen them only if you are willing to re-test.
+torch>=2.2
+transformers>=4.44,<5
+sentence-transformers>=3,<6
+huggingface-hub>=0.34,<1.0
+accelerate>=0.33
+langchain-community>=0.3
+langchain-huggingface>=0.1
+langchain-core>=0.3
+faiss-cpu>=1.8
+pypdf>=4.0
+gradio>=4.44,<6
+cohere>=5.11

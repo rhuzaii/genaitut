@@ -10,6 +10,7 @@ Face, LangChain, RNNs, LSTMs and transformers.
 | --- | --- |
 | `experiment1_multimodal/` | Experiment 1: multimodal generation and cross modal alignment scoring |
 | `experiment4_summarization/` | Experiment 4: abstractive summarization of academic reports |
+| `experiment10_ipc_chatbot/` | Experiment 10: retrieval augmented chatbot over the Indian Penal Code |
 | `REPORT_TEMPLATE.md`, `REPORT_TEMPLATE.docx` | Reusable lab report template |
 | `CSL75_lab_syllabus.txt` | Course contents, the list of experiments and the evaluation scheme |
 
@@ -26,7 +27,7 @@ Face, LangChain, RNNs, LSTMs and transformers.
 | 7 | LangChain with Cohere, document loading and prompt templates | Not started |
 | 8 | Hugging Face sentiment analysis pipeline | Not started |
 | 9 | LangChain with Pydantic for structured Wikipedia extraction | Not started |
-| 10 | Retrieval augmented chatbot over the Indian Penal Code | Not started |
+| 10 | Retrieval augmented chatbot over the Indian Penal Code | Implemented |
 | 11 | PyTorch RNN for time series forecasting | Not started |
 | 12 | LSTM text generation | Not started |
 

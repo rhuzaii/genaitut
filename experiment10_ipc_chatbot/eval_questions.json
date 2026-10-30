@@ -1,0 +1,30 @@
+{
+  "note": "Questions for documents/sample_statute.txt. Write your own set for the IPC, with the governing section annotated by hand. Phrase questions the way a user would, not by copying the statute's wording, otherwise retrieval is measured on keyword overlap rather than meaning.",
+  "in_domain": [
+    {"question": "What is the punishment for ragging?", "section": "21"},
+    {"question": "Does it matter if the junior student agreed to it?", "section": "21"},
+    {"question": "Someone sat an exam in my place. What happens to them?", "section": "12"},
+    {"question": "I copied a paragraph without crediting the author. What is the penalty?", "section": "10"},
+    {"question": "What if I made up the numbers in my lab record?", "section": "11"},
+    {"question": "Am I allowed to carry a calculator into the exam hall?", "section": "14"},
+    {"question": "We worked together on an assignment meant to be done alone.", "section": "13"},
+    {"question": "How long do I have to appeal a decision?", "section": "32"},
+    {"question": "Can the Director increase my punishment on appeal?", "section": "32"},
+    {"question": "How much notice must I be given before a hearing?", "section": "30"},
+    {"question": "Can I bring someone with me to the hearing?", "section": "31"},
+    {"question": "Is there a time limit on bringing a case against me?", "section": "33"},
+    {"question": "I broke a microscope. What do I have to pay?", "section": "22"},
+    {"question": "Who sits on the Disciplinary Committee?", "section": "20"},
+    {"question": "I walked into the server room without asking.", "section": "24"},
+    {"question": "What if I was forced to do it under threat?", "section": "4"},
+    {"question": "Does this code apply to a field trip off campus?", "section": "1"},
+    {"question": "What counts as a student under this code?", "section": "3"}
+  ],
+  "out_of_domain": [
+    "What is the capital of France?",
+    "How do I train a neural network in PyTorch?",
+    "What is the punishment for murder?",
+    "Who won the cricket world cup in 2023?",
+    "What is the recipe for biryani?"
+  ]
+}

@@ -9,3 +9,7 @@ __pycache__/
 # Generated experiment results, downloaded from Colab instead
 */outputs/
 */outputs_*/
+
+# Built vector indexes, rebuilt by running build_index.py
+*/index/
+*/index_*/
