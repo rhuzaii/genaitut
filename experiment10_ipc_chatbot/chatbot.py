@@ -21,6 +21,7 @@ from __future__ import annotations
 import os
 import re
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
 import vectorstore
@@ -101,7 +102,13 @@ class Chatbot:
     def ask(self, question: str, history: list[tuple[str, str]] | None = None) -> Answer:
         history = history or []
         standalone = self.condense(question, history)
-        hits = vectorstore.search(self.store, standalone, self.cfg.retrieval.top_k)
+        hits = vectorstore.search(
+            self.store,
+            standalone,
+            self.cfg.retrieval.top_k,
+            rerank_model=self.cfg.retrieval.rerank_model,
+            rerank_pool=self.cfg.retrieval.rerank_pool,
+        )
         best = hits[0]["similarity"] if hits else 0.0
 
         if not hits or best < self.cfg.retrieval.min_score:
@@ -194,7 +201,28 @@ class Chatbot:
         return out[0]["generated_text"]
 
 
+def load_env_file(path: str = ".env") -> None:
+    """Read KEY=value lines from a .env file into the environment.
+
+    Written by hand rather than pulling in a dependency. Values already set in
+    the environment win, so an exported key overrides the file. The file is
+    gitignored: a key must never reach the repository.
+    """
+    env_path = Path(path)
+    if not env_path.exists():
+        return
+    for line in env_path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        key, value = key.strip(), value.strip().strip("'\"")
+        if key and key not in os.environ:
+            os.environ[key] = value
+
+
 def _resolve_backend(cfg: Config) -> str:
+    load_env_file()
     backend = cfg.generator.backend
     if backend != "auto":
         return backend

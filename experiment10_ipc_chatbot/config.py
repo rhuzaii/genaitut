@@ -41,6 +41,11 @@ class ChunkConfig:
 class RetrievalConfig:
     embedding_key: str = "minilm"
     top_k: int = 5
+    # A cross encoder scores the query against each candidate jointly rather
+    # than comparing two independently produced vectors, which is slower but
+    # far better at telling near neighbours apart. Set to None to disable.
+    rerank_model: str | None = None
+    rerank_pool: int = 25
     # Below this cosine similarity a chunk is treated as irrelevant, so the
     # bot declines rather than answering from a weak match.
     min_score: float = 0.25

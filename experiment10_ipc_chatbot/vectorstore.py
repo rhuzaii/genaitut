@@ -90,9 +90,27 @@ def read_manifest(cfg: Config) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def search(store, query: str, top_k: int) -> list[dict[str, Any]]:
-    """Return the top_k passages with a cosine similarity in [-1, 1]."""
-    hits = store.similarity_search_with_score(query, k=top_k)
+_rerankers: dict[str, Any] = {}
+
+
+def search(
+    store,
+    query: str,
+    top_k: int,
+    rerank_model: str | None = None,
+    rerank_pool: int = 25,
+) -> list[dict[str, Any]]:
+    """Return the top_k passages with a cosine similarity in [-1, 1].
+
+    With rerank_model set, a wider pool is fetched by vector similarity and
+    then reordered by a cross encoder, which reads the query and the passage
+    together instead of comparing two separately produced vectors. Adjacent
+    provisions of a statute share nearly all their vocabulary, which is
+    exactly the case a bi-encoder handles worst.
+    """
+    fetch = max(top_k, rerank_pool) if rerank_model else top_k
+    hits = store.similarity_search_with_score(query, k=fetch)
+
     results = []
     for document, distance in hits:
         results.append(
@@ -103,7 +121,24 @@ def search(store, query: str, top_k: int) -> list[dict[str, Any]]:
                 "citation": _citation(document.metadata),
             }
         )
-    return results
+
+    if rerank_model and results:
+        results = _rerank(rerank_model, query, results)
+
+    return results[:top_k]
+
+
+def _rerank(model_name: str, query: str, results: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    from sentence_transformers import CrossEncoder
+
+    if model_name not in _rerankers:
+        _rerankers[model_name] = CrossEncoder(model_name)
+    model = _rerankers[model_name]
+
+    scores = model.predict([(query, hit["text"]) for hit in results])
+    for hit, score in zip(results, scores):
+        hit["rerank_score"] = round(float(score), 4)
+    return sorted(results, key=lambda hit: -hit["rerank_score"])
 
 
 def _citation(metadata: dict[str, Any]) -> str:

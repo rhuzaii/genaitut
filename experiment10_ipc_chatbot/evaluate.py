@@ -57,7 +57,13 @@ def evaluate_retrieval(
 
     details = []
     for item in items:
-        results = vectorstore.search(store, item["question"], max_k)
+        results = vectorstore.search(
+            store,
+            item["question"],
+            max_k,
+            rerank_model=cfg.retrieval.rerank_model,
+            rerank_pool=cfg.retrieval.rerank_pool,
+        )
         heading = _normalise(section_text.get(str(item["section"]), ""))
         rank = None
         for position, hit in enumerate(results, start=1):

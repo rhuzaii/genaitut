@@ -29,6 +29,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--top-k", type=int, default=5)
     parser.add_argument("--min-score", type=float, default=0.25)
     parser.add_argument("--embedding", default="minilm", choices=sorted(EMBEDDING_CHOICES))
+    parser.add_argument("--rerank", nargs="?", const="cross-encoder/ms-marco-MiniLM-L-6-v2",
+                        default=None, help="reorder candidates with a cross encoder")
     parser.add_argument("--device", default="auto", choices=["auto", "cuda", "mps", "cpu"])
     parser.add_argument("--evaluate", action="store_true", help="run metrics instead of answering")
     parser.add_argument("--questions", default="eval_questions.json")
@@ -50,6 +52,7 @@ def build_config(args: argparse.Namespace) -> Config:
     cfg.retrieval.top_k = args.top_k
     cfg.retrieval.min_score = args.min_score
     cfg.retrieval.embedding_key = args.embedding
+    cfg.retrieval.rerank_model = args.rerank
     cfg.generator.backend = args.backend
     return cfg
 

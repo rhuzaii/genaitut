@@ -16,3 +16,7 @@ __pycache__/
 
 # The India Code .txt bitstream is truncated to about a fifth of the Act
 experiment10_ipc_chatbot/documents/ipc.txt
+
+# API keys, never committed
+.env
+*/.env
