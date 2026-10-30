@@ -171,7 +171,7 @@ class Chatbot:
     def _generate_cohere(self, prompt: str) -> str:
         import cohere
 
-        client = cohere.ClientV2(api_key=os.environ["COHERE_API_KEY"])
+        client = cohere.ClientV2(api_key=_require_api_key())
         response = client.chat(
             model=self.cfg.generator.cohere_model,
             messages=[{"role": "user", "content": prompt}],
@@ -199,6 +199,36 @@ class Chatbot:
             return_full_text=False,
         )
         return out[0]["generated_text"]
+
+
+PLACEHOLDER_KEYS = {
+    "paste-your-key-here",
+    "your-key-here",
+    "your_key_here",
+    "changeme",
+}
+
+
+def _require_api_key() -> str:
+    """Return the Cohere key, failing with a useful message rather than a 401.
+
+    Copying .env.example and forgetting to replace the placeholder sends the
+    literal placeholder to the API, which answers with an opaque unauthorized
+    error. Catching it here says what to actually do.
+    """
+    key = (os.environ.get("COHERE_API_KEY") or "").strip()
+    if not key:
+        raise RuntimeError(
+            "COHERE_API_KEY is not set. Put it in .env, export it, or run "
+            "with --backend local or --backend extractive."
+        )
+    if key in PLACEHOLDER_KEYS or key.endswith("-here"):
+        raise RuntimeError(
+            "COHERE_API_KEY is still the placeholder from .env.example. "
+            "Open .env and replace it with a real key from "
+            "https://dashboard.cohere.com/api-keys"
+        )
+    return key
 
 
 def load_env_file(path: str = ".env") -> None:

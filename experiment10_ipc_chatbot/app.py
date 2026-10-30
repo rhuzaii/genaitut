@@ -42,7 +42,13 @@ def make_responder(bot: chatbot.Chatbot):
     """
 
     def respond(message: str, history: list[dict]) -> str:
-        answer = bot.ask(message, to_turns(history))
+        try:
+            answer = bot.ask(message, to_turns(history))
+        except Exception as exc:
+            # Gradio renders an uncaught exception as a bare "Error" badge with
+            # the reason only in the server log, which is useless to whoever is
+            # looking at the page.
+            return f"**Something went wrong.**\n\n```\n{type(exc).__name__}: {exc}\n```"
 
         text = answer.text
         if answer.standalone_question != answer.question:
